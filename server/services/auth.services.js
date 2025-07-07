@@ -82,3 +82,12 @@ export const deleteSessionDataBySessionId = async (id) => {
     return null;
   }
 };
+
+export const insertVerifyEmailTokenData = async (data) => {
+  try {
+    const [tokenData] = await db.insert(tables.verifyEmailsTable).values(data);
+    return tokenData;
+  } catch (err) {
+    return null;
+  }
+};

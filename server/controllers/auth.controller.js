@@ -4,10 +4,15 @@ import {
   deleteSessionDataBySessionId,
   getSessionDataBySessionId,
   getUserDataByUserName,
+  insertVerifyEmailTokenData,
 } from "../services/auth.services.js";
 import { hashPassword, verifyPassword } from "../utils/hash.js";
 import { loginSchema, signupSchema } from "../validators/auth.validation.js";
 import { setUpAuthCookies } from "../utils/auth.cookies.js";
+import { genRandomVerifyEmailToken } from "../utils/token.generator.js";
+import { genVerifyEmailUri } from "../utils/link.generator.js";
+import { sendMail } from "../libs/resend.js";
+import { convertMjmlToHtml } from "../utils/convert-mjml-to-html.js";
 
 export const getSignUpPage = (req, res) => {
   if (req.user) return res.redirect("/");
@@ -147,9 +152,33 @@ export const logout = async (req, res) => {
   }
 };
 
-export const getVerifyEmailToken = (req, res) => {
+export const getVerifyEmailToken = async (req, res) => {
   if (!req.user) return res.redirect("/login");
   try {
+    const verifyEmailToken = genRandomVerifyEmailToken();
+
+    const userData = await getUserDataByUserName(req.user.userName);
+
+    const insertedToken = await insertVerifyEmailTokenData({
+      code: verifyEmailToken,
+      userId: userData.id,
+    });
+
+    if (!insertedToken) throw new Error("Data could not be inserted");
+
+    const uri = genVerifyEmailUri(verifyEmailToken, userData.email);
+
+    const html = await convertMjmlToHtml("verify-email", {
+      code: verifyEmailToken,
+      verifyUri: uri,
+    });
+
+    await sendMail({
+      to: userData.email,
+      subject: "Verify Your Email",
+      html,
+    }).catch(console.error("Send Mail Error"));
+
     return res.redirect("/verify/email");
   } catch (err) {
     return res.status(400).send("Something went wrong");
