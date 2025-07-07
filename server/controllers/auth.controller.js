@@ -1,3 +1,5 @@
+import { signupSchema } from "../validators/auth.validation.js";
+
 export const getSignUpPage = (req, res) => {
   try {
     return res.status(200).render("signup", { errors: req.flash("errors") });
@@ -24,8 +26,25 @@ export const getVerifyEmailPage = (req, res) => {
   }
 };
 
-export const signup = (req, res) => {
+export const signup = async (req, res) => {
   try {
+    const { data, error } = signupSchema.safeParse(req.body);
+
+    if (error) {
+      req.flash("errors", error.errors[0].message);
+      return res.redirect("/signup");
+    }
+
+    const { name, userName, email, password } = data;
+
+    const newUser = await createNewUser({ name, userName, email, password });
+
+    if (!newUser) {
+      req.flash("errors", "Couldn't create User");
+      return res.redirect("/signup");
+    }
+
+    return res.redirect("/login");
   } catch (err) {
     return res.status(400).send("Something went wrong");
   }

@@ -2,6 +2,7 @@ import express from "express";
 import path from "path";
 import session from "express-session";
 import flash from "connect-flash";
+import cookieParser from "cookie-parser";
 
 import authRoute from "./routes/auth.route.js";
 
@@ -14,6 +15,7 @@ app.use(
   session({ secret: "my-secret", resave: true, saveUninitialized: false })
 );
 app.use(flash());
+app.use(cookieParser());
 
 app.set("view engine", "ejs");
 app.set("views", path.join(import.meta.dirname, "..", "client", "views"));
@@ -24,7 +26,7 @@ app.use(
 app.use("/", authRoute);
 
 app.get("/", (req, res) => {
-  res.status(200).send("Home Page");
+  res.status(200).render("index");
 });
 
 export default app;
