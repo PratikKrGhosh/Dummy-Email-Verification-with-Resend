@@ -1,0 +1,40 @@
+{
+  "name": "dummy-email-verification-with-resend",
+  "version": "1.0.0",
+  "description": "This is a simple project to practice full dual auth with email verification with Resend",
+  "keywords": [
+    "resend",
+    "email-verification",
+    "dual-auth",
+    "session",
+    "cookies",
+    "node",
+    "drizzle",
+    "mysql"
+  ],
+  "homepage": "https://github.com/PratikKrGhosh/Dummy-Email-Verification-with-Resend#readme",
+  "bugs": {
+    "url": "https://github.com/PratikKrGhosh/Dummy-Email-Verification-with-Resend/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PratikKrGhosh/Dummy-Email-Verification-with-Resend.git"
+  },
+  "license": "MIT",
+  "author": "Pratik Kumar Ghosh",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon ./server/server.js"
+  },
+  "dependencies": {
+    "dotenv": "^17.0.1",
+    "drizzle-orm": "^0.44.2",
+    "express": "^5.1.0",
+    "mysql2": "^3.14.1"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.31.4"
+  }
+}
