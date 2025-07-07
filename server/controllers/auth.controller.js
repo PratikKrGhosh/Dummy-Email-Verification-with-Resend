@@ -1,4 +1,3 @@
-import { email } from "zod/v4";
 import {
   createNewSession,
   createNewUser,
@@ -11,6 +10,7 @@ import { loginSchema, signupSchema } from "../validators/auth.validation.js";
 import { setUpAuthCookies } from "../utils/auth.cookies.js";
 
 export const getSignUpPage = (req, res) => {
+  if (req.user) return res.redirect("/");
   try {
     return res.status(200).render("signup", { errors: req.flash("errors") });
   } catch (err) {
@@ -19,6 +19,7 @@ export const getSignUpPage = (req, res) => {
 };
 
 export const getLogInPage = (req, res) => {
+  if (req.user) return res.redirect("/");
   try {
     return res.status(200).render("login", { errors: req.flash("errors") });
   } catch (err) {
@@ -27,6 +28,7 @@ export const getLogInPage = (req, res) => {
 };
 
 export const getVerifyEmailPage = (req, res) => {
+  if (!req.user) return res.redirect("/login");
   try {
     return res
       .status(200)
@@ -37,6 +39,7 @@ export const getVerifyEmailPage = (req, res) => {
 };
 
 export const signup = async (req, res) => {
+  if (req.user) return res.redirect("/");
   try {
     const { data, error } = signupSchema.safeParse(req.body);
 
@@ -47,7 +50,7 @@ export const signup = async (req, res) => {
 
     const { name, userName, email, password } = data;
 
-    const hashedPassword = hashPassword(password);
+    const hashedPassword = await hashPassword(password);
 
     const newUser = await createNewUser({
       name,
@@ -68,6 +71,7 @@ export const signup = async (req, res) => {
 };
 
 export const login = async (req, res) => {
+  if (req.user) return res.redirect("/");
   try {
     const { data, error } = loginSchema.safeParse(req.body);
 
@@ -85,7 +89,7 @@ export const login = async (req, res) => {
       return res.redirect("/login");
     }
 
-    const checkPassword = verifyPassword({
+    const checkPassword = await verifyPassword({
       pass: password,
       hashed: userData.password,
     });
@@ -116,6 +120,7 @@ export const login = async (req, res) => {
 };
 
 export const logout = async (req, res) => {
+  if (!req.user) return res.redirect("/login");
   try {
     const userData = await getUserDataByUserName(req.user.userName);
 
@@ -143,13 +148,16 @@ export const logout = async (req, res) => {
 };
 
 export const getVerifyEmailToken = (req, res) => {
+  if (!req.user) return res.redirect("/login");
   try {
+    return res.redirect("/verify/email");
   } catch (err) {
     return res.status(400).send("Something went wrong");
   }
 };
 
 export const verifyEmail = (req, res) => {
+  if (!req.user) return res.redirect("/login");
   try {
   } catch (err) {
     return res.status(400).send("Something went wrong");

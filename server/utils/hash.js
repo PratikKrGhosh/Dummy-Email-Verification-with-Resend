@@ -1,6 +1,6 @@
 import argon2 from "argon2";
 
-export const hashPassword = (pass) => {
+export const hashPassword = async (pass) => {
   try {
     return argon2.hash(pass);
   } catch (err) {
@@ -8,7 +8,7 @@ export const hashPassword = (pass) => {
   }
 };
 
-export const verifyPassword = ({ pass, hashed }) => {
+export const verifyPassword = async ({ pass, hashed }) => {
   try {
     return argon2.verify(hashed, pass);
   } catch (err) {

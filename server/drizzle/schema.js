@@ -18,11 +18,11 @@ export const sessionsTable = mysqlTable("sessions_table", {
   userIp: varchar("user_ip", { length: 255 }).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   expiresAt: timestamp("expires_at")
-    .default(sql`(CURRENT_TIMESTAMP + INTERVAL 15 DAYS)`)
+    .default(sql`(CURRENT_TIMESTAMP + INTERVAL 15 DAY)`)
     .notNull(),
 });
 
-export const verifyEmailsTable = mysqlTable("verifyEmails_table", {
+export const verifyEmailsTable = mysqlTable("verify_emails_table", {
   id: int().autoincrement().primaryKey(),
   userId: int("user_id")
     .notNull()
@@ -31,7 +31,7 @@ export const verifyEmailsTable = mysqlTable("verifyEmails_table", {
   valid: boolean().default(true).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   expiresAt: timestamp("expires_at")
-    .default(sql`(CURRENT_TIMESTAMP + INTERVAL 15 MINUTES)`)
+    .default(sql`(CURRENT_TIMESTAMP + INTERVAL 15 MINUTE)`)
     .notNull(),
 });
 

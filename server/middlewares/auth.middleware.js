@@ -4,8 +4,8 @@ import { verifyJwtToken } from "../utils/token.js";
 
 const authMiddleware = async (req, res, next) => {
   try {
-    const accessToken = req.cookies("access_token");
-    const refreshToken = req.cookies("refresh_token");
+    const accessToken = req.cookies.access_token;
+    const refreshToken = req.cookies.refresh_token;
 
     if (accessToken) {
       const decodedAccessToken = await verifyJwtToken(accessToken);

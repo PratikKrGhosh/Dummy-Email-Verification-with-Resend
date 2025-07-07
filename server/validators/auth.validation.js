@@ -4,7 +4,7 @@ const nameSchema = z
   .string()
   .trim()
   .min({ message: "Name must have atlest 3 charecters" })
-  .max(15, { message: "Name can't have more than 15 charecters" });
+  .max(20, { message: "Name can't have more than 20 charecters" });
 
 const userNameSchema = z
   .string()

@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "a8d0cfeb-3f96-417a-961a-63022fdca08a",
+  "id": "c33f8482-190d-4ca6-8e24-bbe083ea27e4",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "sessions_table": {
@@ -57,7 +57,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "(CURRENT_TIMESTAMP + INTERVAL 15 DAYS)"
+          "default": "(CURRENT_TIMESTAMP + INTERVAL 15 DAY)"
         }
       },
       "indexes": {},
@@ -177,8 +177,8 @@
       },
       "checkConstraint": {}
     },
-    "verifyEmails_table": {
-      "name": "verifyEmails_table",
+    "verify_emails_table": {
+      "name": "verify_emails_table",
       "columns": {
         "id": {
           "name": "id",
@@ -223,14 +223,14 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "(CURRENT_TIMESTAMP + INTERVAL 15 MINUTES)"
+          "default": "(CURRENT_TIMESTAMP + INTERVAL 15 MINUTE)"
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "verifyEmails_table_user_id_users_table_id_fk": {
-          "name": "verifyEmails_table_user_id_users_table_id_fk",
-          "tableFrom": "verifyEmails_table",
+        "verify_emails_table_user_id_users_table_id_fk": {
+          "name": "verify_emails_table_user_id_users_table_id_fk",
+          "tableFrom": "verify_emails_table",
           "tableTo": "users_table",
           "columnsFrom": [
             "user_id"
@@ -243,8 +243,8 @@
         }
       },
       "compositePrimaryKeys": {
-        "verifyEmails_table_id": {
-          "name": "verifyEmails_table_id",
+        "verify_emails_table_id": {
+          "name": "verify_emails_table_id",
           "columns": [
             "id"
           ]
