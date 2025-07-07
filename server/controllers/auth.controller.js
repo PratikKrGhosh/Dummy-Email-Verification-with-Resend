@@ -1,4 +1,14 @@
-import { signupSchema } from "../validators/auth.validation.js";
+import { email } from "zod/v4";
+import {
+  createNewSession,
+  createNewUser,
+  deleteSessionDataBySessionId,
+  getSessionDataBySessionId,
+  getUserDataByUserName,
+} from "../services/auth.services.js";
+import { hashPassword, verifyPassword } from "../utils/hash.js";
+import { loginSchema, signupSchema } from "../validators/auth.validation.js";
+import { setUpAuthCookies } from "../utils/auth.cookies.js";
 
 export const getSignUpPage = (req, res) => {
   try {
@@ -37,7 +47,14 @@ export const signup = async (req, res) => {
 
     const { name, userName, email, password } = data;
 
-    const newUser = await createNewUser({ name, userName, email, password });
+    const hashedPassword = hashPassword(password);
+
+    const newUser = await createNewUser({
+      name,
+      userName,
+      email,
+      password: hashedPassword,
+    });
 
     if (!newUser) {
       req.flash("errors", "Couldn't create User");
@@ -50,15 +67,76 @@ export const signup = async (req, res) => {
   }
 };
 
-export const login = (req, res) => {
+export const login = async (req, res) => {
   try {
+    const { data, error } = loginSchema.safeParse(req.body);
+
+    if (error) {
+      req.flash("errors", error.errors[0].message);
+      return res.redirect("/login");
+    }
+
+    const { userName, password } = data;
+
+    const userData = await getUserDataByUserName(userName);
+
+    if (!userData) {
+      req.flash("errors", "Invalid user or Password");
+      return res.redirect("/login");
+    }
+
+    const checkPassword = verifyPassword({
+      pass: password,
+      hashed: userData.password,
+    });
+
+    if (!checkPassword) {
+      req.flash("errors", "Invalid user or Password");
+      return res.redirect("/login");
+    }
+
+    const session = await createNewSession({
+      userId: userData.id,
+      userAgent: req.headers["user-agent"],
+      userIp: req.clientIp,
+    });
+
+    await setUpAuthCookies(res, {
+      name: userData.name,
+      userName: userData.userName,
+      email: userData.email,
+      isVerified: userData.isVerified,
+      sessionId: session.id,
+    });
+
+    return res.redirect("/");
   } catch (err) {
     return res.status(400).send("Something went wrong");
   }
 };
 
-export const logout = (req, res) => {
+export const logout = async (req, res) => {
   try {
+    const userData = await getUserDataByUserName(req.user.userName);
+
+    if (!userData) {
+      res.clearCookie("access_token");
+      res.clearCookie("refresh_token");
+      return res.redirect("/login");
+    }
+
+    const sessionData = await getSessionDataBySessionId(req.user.sessionId);
+
+    if (!sessionData || !sessionData.valid) {
+      res.clearCookie("access_token");
+      res.clearCookie("refresh_token");
+      return res.redirect("/login");
+    }
+
+    await deleteSessionDataBySessionId(req.user.sessionId);
+
+    res.clearCookie("access_token");
+    res.clearCookie("refresh_token");
   } catch (err) {
     return res.status(400).send("Something went wrong");
   }
