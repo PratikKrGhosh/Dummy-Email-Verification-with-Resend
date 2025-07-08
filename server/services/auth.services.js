@@ -23,6 +23,18 @@ export const getUserDataByUserName = async (userName) => {
   }
 };
 
+export const getUserDataByEmail = async (email) => {
+  try {
+    const [user] = await db
+      .select()
+      .from(tables.usersTable)
+      .where(eq(tables.usersTable.email, email));
+    return user;
+  } catch (err) {
+    return null;
+  }
+};
+
 export const createNewSession = async (data) => {
   try {
     const [session] = await db
@@ -84,10 +96,65 @@ export const deleteSessionDataBySessionId = async (id) => {
 };
 
 export const insertVerifyEmailTokenData = async (data) => {
+  return db.transaction(async (tx) => {
+    try {
+      await tx
+        .delete(tables.verifyEmailsTable)
+        .where(eq(tables.verifyEmailsTable.userId, data.userId));
+
+      const [insertedData] = await tx
+        .insert(tables.verifyEmailsTable)
+        .values(data);
+      return insertedData;
+    } catch (err) {
+      console.error("transaction Error:", err);
+      return null;
+    }
+  });
+};
+
+export const getCodeDataByCodeAndUserId = async (code, userId) => {
   try {
-    const [tokenData] = await db.insert(tables.verifyEmailsTable).values(data);
+    const [tokenData] = await db
+      .select()
+      .from(tables.verifyEmailsTable)
+      .where(
+        and(
+          eq(tables.verifyEmailsTable.code, code),
+          eq(tables.verifyEmailsTable.userId, userId)
+        )
+      );
     return tokenData;
   } catch (err) {
     return null;
   }
+};
+
+export const deleteCodeDataById = async (id) => {
+  try {
+    const [code] = await db
+      .delete(tables.verifyEmailsTable)
+      .where(eq(tables.verifyEmailsTable.id, id));
+    return code;
+  } catch (err) {
+    return null;
+  }
+};
+
+export const changeVerifyStatusByUserId = async (userId, codeId) => {
+  return db.transaction(async (tx) => {
+    try {
+      await tx
+        .update(tables.usersTable)
+        .set({ isVerified: true })
+        .where(eq(tables.usersTable.id, userId));
+
+      await tx
+        .delete(tables.verifyEmailsTable)
+        .where(eq(tables.verifyEmailsTable.id, codeId));
+    } catch (err) {
+      console.error("transaction Error", err);
+      return null;
+    }
+  });
 };

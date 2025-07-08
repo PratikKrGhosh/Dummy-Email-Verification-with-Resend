@@ -1,8 +1,12 @@
 import {
+  changeVerifyStatusByUserId,
   createNewSession,
   createNewUser,
+  deleteCodeDataById,
   deleteSessionDataBySessionId,
+  getCodeDataByCodeAndUserId,
   getSessionDataBySessionId,
+  getUserDataByEmail,
   getUserDataByUserName,
   insertVerifyEmailTokenData,
 } from "../services/auth.services.js";
@@ -164,7 +168,10 @@ export const getVerifyEmailToken = async (req, res) => {
       userId: userData.id,
     });
 
-    if (!insertedToken) throw new Error("Data could not be inserted");
+    if (!insertedToken) {
+      req.flash("errors", "Data could not be inserted");
+      return res.status(400).redirect("/verify/email");
+    }
 
     const uri = genVerifyEmailUri(verifyEmailToken, userData.email);
 
@@ -181,13 +188,37 @@ export const getVerifyEmailToken = async (req, res) => {
 
     return res.redirect("/verify/email");
   } catch (err) {
-    return res.status(400).send("Something went wrong");
+    req.flash("errors", "Something went wrong");
+    return res.status(400).redirect("/verify/email");
   }
 };
 
-export const verifyEmail = (req, res) => {
+export const verifyEmail = async (req, res) => {
   if (!req.user) return res.redirect("/login");
   try {
+    const { code, email } = req.query;
+
+    const userData = await getUserDataByEmail(email);
+    if (!userData) {
+      await deleteCodeDataById(codeData.id);
+      return res.redirect("/login");
+    }
+
+    const codeData = await getCodeDataByCodeAndUserId(code, userData.id);
+
+    if (!codeData || !codeData.valid) {
+      await deleteCodeDataById(codeData.id);
+      return res.redirect("/verify/email");
+    }
+
+    await changeVerifyStatusByUserId(codeData.userId, codeData.id);
+
+    const updatedUserData = await getUserDataByEmail(userData.email);
+    await setUpAuthCookies(res, {
+      ...updatedUserData,
+      sessionId: req.user.sessionId,
+    });
+    return res.redirect("/");
   } catch (err) {
     return res.status(400).send("Something went wrong");
   }
