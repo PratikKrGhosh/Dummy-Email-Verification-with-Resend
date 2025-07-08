@@ -177,7 +177,7 @@ export const getVerifyEmailToken = async (req, res) => {
       to: userData.email,
       subject: "Verify Your Email",
       html,
-    }).catch(console.error("Send Mail Error"));
+    }).catch((err) => console.error("Send Mail Error", err));
 
     return res.redirect("/verify/email");
   } catch (err) {
