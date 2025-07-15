@@ -3,7 +3,7 @@ import z from "zod";
 const nameSchema = z
   .string()
   .trim()
-  .min({ message: "Name must have atlest 3 charecters" })
+  .min(3, { message: "Name must have atlest 3 charecters" })
   .max(20, { message: "Name can't have more than 20 charecters" });
 
 const userNameSchema = z
